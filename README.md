@@ -105,4 +105,120 @@ Before calculating the performance metrics on data, we had to create the linear 
 (We have calculated the train and test for all the models, but from now on we will show only our test results)
 Even if the relationship between the features and popularity was not linear, we can see that the results are not bad, and this can due to the fact that we added some linearity with the categorical variables encoded with LeaveOneOut that we were not able to see previously.
 Now we're gonna perform some scatter plot analysis for `track_genre, artists` and ` album_name.`
-The three scatter plots allow for exploring the relationship between `'y_train2'` and specific predictor variables, enabling the identification of potential correlations or patterns that can be useful for subsequent analysis and modeling. From thios graphics We can see that the relationship between album_name and popularity, and between artists and popularity is a little bit more linea
+The three scatter plots allow for exploring the relationship between `'y_train2'` and specific predictor variables, enabling the identification of potential correlations or patterns that can be useful for subsequent analysis and modeling. From thios graphics We can see that the relationship between album_name and popularity, and between artists and popularity is a little bit more linear. 
+
+### Lasso Regression
+Lasso Regression is a type of linear regression model that incorporates a regularization term to prevent overfitting, making it ideal for dealing with high-dimensional datasets. This method also performs feature selection by shrinking the coefficients of less important features to zero. To optimize the model's performance, a GridSearchCV is used to adjust the alpha hyperparameter, balancing the model's fit to the training data and the reduction of model complexity via coefficient shrinkage.
+
+|              | R^2              | RMSE               |
+|--------------|------------------|--------------------|
+| **Training Set** | 0.7868394239628225 |  3.8877262943718374 |
+| **Test Set**     |  0.713398294731186 | 9.604719179276078 |
+
+
+As we can see, the results are very similar to the linear regression, and this suggest that the added regularization and feature selection capabilities of lasso regression were not beneficial for the specific dataset and modeling task at hand.
+
+## Ensamble Methods
+
+After our first two interpretable model, to improve our results we pass on the ensemble methods
+
+### Gradient Boosting
+The Gradient Boosting Regressor is a powerful algorithm that works in an iterative manner. Initially, it uses the entire training set, and with each subsequent iteration, it focuses more on the examples that were mispredicted in the previous example. 
+To perform the model we have defined some parameters and then a GridSearch. After this we trained the model with both test and train.
+
+
+|              | R^2              | RMSE               |
+|--------------|------------------|--------------------|
+| **Training Set** | 0.9695583759259719 |  3.8877262943718374 |
+| **Test Set**     |  0.8143137970272326 | 9.604719179276078 |
+
+After this, we plotted the residuals against the predicted values to see if there is overfitting in the datasets.
+In the graph, the axes represent the predicted values and the residuals, respectively. The points on the graph represent the discrepancies between the predicted values and the actual values. The x-axis shows the predicted values, while the y-axis represents the residuals. as we can see from the large difference between the performance on the training and on the test and from the graph, our model is doing overfitting, therefore we had to simplify the model.
+By considering that the best parameters of the GridSearchCV are {'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 300} in order to reduce the complexity we tried to reduce the max_depth and n_estimators by hand tring to reach a less overfitted model.
+
+|              | R^2              | RMSE               |
+|--------------|------------------|--------------------|
+| **Training Set** | 0.8508809059734708 |  8.60455472184738 |
+| **Test Set**     |  0.7996773341190241 | 9.976079452698436 |
+
+As we can see, the difference between training and test performance has been reduced.
+
+## XGBoost
+
+The XGBoost Regressor is an advanced version of the Gradient Boosting Regressor that incorporates regularization techniques. From XGBoost we imported the **DMatrix** library, which offeres optimized implementation for training boosting models. The main advantage that DMatrix bring to us is that this structure allow stroing data in a highly efficient format, that results in faster training times for our model. We started by defining the model and the parameters for the Gridsearch, then after obtaining the result, we trained both train and test set.
+
+|              | R^2              | RMSE               |
+|--------------|------------------|--------------------|
+| **Training Set** | 0.967756117709457 |  4.0017164819033795 |
+| **Test Set**     |  0.8096215795479538 | 9.719864384521323 |
+
+As we can see, the model is overfitting, therefore we have to reduce the complexity of the model. As before we have changed the hyperparameters manually ) and more specificly we have tried these combination of 
+hyperparameters:
+
+- learning_rate=0.1, max_depth=7, n_estimators=300
+- learning_rate=0.1, max_depth=7, n_estimators=200
+- learning_rate=0.1, max_depth=7, n_estimators=100
+- learning_rate=0.1, max_depth=5, n_estimators=100
+- learning_rate=0.1, max_depth=3, n_estimators=100
+
+We found the best result here: (learning_rate=0.1, max_depth=3, n_estimators=100, random_state= 42)
+
+|              | R^2              | RMSE               |
+|--------------|------------------|--------------------|
+| **Training Set** | 0.8513600659849165|  8.590719216933199 |
+| **Test Set**     |  0.8001676089429381 | 9.963864117889782 |
+
+However, after launching the plot, we can see that the graph reamains almost the same. 
+
+METTERE SPIEGAZIONE/POSSIBILE SOLUZIONE
+
+## Random Forest
+
+For our analysis, we've also used the Random Forest. This model consists of multiple decision trees. To train these trees, we used Bagging, where we repeatedly evaluated different samples from the original training set. Each sample was randomly selected, allowing for replacement.
+By doing this, we ensured that each tree in the Random Forest had a slightly different training set, resulting in a diverse ensemble of trees. We combined the predictions of these individual trees to make accurate and robust predictions for our analysis.
+In order to run the model we defined a parameter grid, performed a grid search and then we have calculated metrics for both train and test. 
+
+///Results///
+
+As we can see, also this model is overfitting, therefore we have to reduce again the complexity of the model by changing the parameters manually: 
+
+    (n_estimators=100,
+    max_depth=10,
+    min_samples_split=10,
+    min_samples_leaf=1,
+    max_features='sqrt',
+    n_jobs=-1,
+    random_state=42)
+
+///Results///
+
+We can say that between all the models that we have consider, the can XGboost with this combination of hyperameters, is the one that performs the best reaching a good R2 score. However as we saw from the plot for the overfitting it seems that the overall situation has not changed that much. Therefore in order to give more robustness to the predictions we have performed a Voting Regressor.
+
+### Voting Regressor
+The Voting Regressor is an ensemble machine learning algorithm that combines multiple regression models to generate predictions. It aggregates the predictions from individual regressor models and outputs either the average or weighted average prediction.
+
+In our approach, we utilize the following models for the VotingRegressor:
+
+1. *XGBoost* (selected for its superior performance)
+2. *RandomForest*
+3. *LinearRegressor* (chosen as the highest performing model)
+
+Instead of opting for gradient boosting, even if it exhibited lower performance, we made the decision to employ the linear regressor. This choice was driven by our motivation to capture diverse aspects and patterns within the data, considering that gradient boosting shares a very similar process with XGBoost.
+
+///RESULTS///
+
+After performing the code, we can see the performance of the voting regressor is lower than our best model, therefore we can affirm that **our best model is the XGBoost!**
+
+
+# Feature importance with SHAP
+
+SHAP is a library that leverages a mathematical method to elucidate the predictions made by machine learning models. It draws upon game theory concepts and can be employed to explicate the predictions of any machine learning model by calculating the contribution of each feature to the prediction. In our case, we applied SHAP to our top-performing model, gradient boosting, to enhance its interpretability and gain a better understanding of its prediction process.
+
+To begin, we need to create an explainer object by specifying the model and the dataset that will be utilized for making predictions. Then we can start to plot our graph. In the first graph we can see the contribution of each variable to the predictions. Higher is the shape value, higher is the importance of that predictor. Here we can see the contribution of each variable to the predictions. The higher is the shape value, the higher will be the importance of the predictor. 
+Here we have only the total importance without saying if it directly or inversely correlated with the response variable. 
+
+To continue, we have calculated the feature importance and then we have plotted a summary plot. This plot has helped us to see how the variables contribution. (positive and high, influence directly and a lot the prediction, negative and low, influence inversely the prediction a lot). The most important features to predict the popularity album are album_name, track_genre, artists, therefore the recommendations should be more focus on that rather than audio_features
+
+# Conclusions
+To conclude our project we have provided two tables to easily see which are the average or median values of the audio features of the most popular songs and  the mean and the standard deviation of the audio features (numerical variables) separated in bins.
+To conclude, we can affirm that after all our ana
