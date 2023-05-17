@@ -56,7 +56,7 @@ By having this in mind, we provide the code for data preprocessing that can be c
 This DataFrame will serve as the input for training the machine learning model.  Lastly  `y` is created, containing only the `popularity` column from `df`, representing the target variable that the model aims to predict. 
 
 ### Data Binning
-As the distribution of the popularity score was not constant among different values we implemented a data binning methodology to partition the original dataset into a training and test set containing the same proportion of popularity Score values. We started by creating creating bins and labels to categorize the values in the `y` column into distinct categories. Then, a new column 'bins' is added to the DataFrame `X`, containing the assigned category for each value in `y`. Then we've splitted the data into training and testing sets, maintaining the class distribution based on the `bins` column. 
+As the distribution of the popularity score was not constant among different values we implemented a data binning methodology to partition the original dataset into a training and test set containing the same proportion of popularity Score values. We started by creating bins and labels to categorize the values in the `y` column into distinct categories. Then, a new column 'bins' is added to the DataFrame `X`, containing the assigned category for each value in `y`. Then we've splitted the data into training and testing sets, maintaining the class distribution based on the `bins` column. 
 The feature and target variable data are assigned to separate variables for both the **training and testing sets**. Then we've removed the `bins` from both the training and testing DataFrames. Moving forward we've decided to make some plot to make some analysis, and from that we've noticed that some Values above the *99th percentile* threshold could be seen as noise, se we decided to replace it with the threshold value itself. 
 This ensures that extremely high values do not disproportionately influence the model's training process.
 
@@ -145,14 +145,14 @@ As we can see, the difference between training and test performance has been red
 
 ## XGBoost
 
-The XGBoost Regressor is an advanced version of the Gradient Boosting Regressor that incorporates regularization techniques. From XGBoost we imported the **DMatrix** library, which offeres optimized implementation for training boosting models. The main advantage that DMatrix bring to us is that this structure allow stroing data in a highly efficient format, that results in faster training times for our model. We started by defining the model and the parameters for the Gridsearch, then after obtaining the result, we trained both train and test set.
+The XGBoost Regressor is an advanced version of the Gradient Boosting Regressor that incorporates regularization techniques. From XGBoost we imported the **DMatrix** library, which offeres optimized implementation for training boosting models. The main advantage that DMatrix bring to us is that this structure allow stroing data in a highly efficient format, that results in faster training times for our model. We started by defining the model and the parameters for the GridsearchCV, then after obtaining the result, we trained both train and test set.
 
 |              | R^2              | RMSE               |
 |--------------|------------------|--------------------|
 | **Training Set** | 0.967756117709457 |  4.0017164819033795 |
 | **Test Set**     |  0.8096215795479538 | 9.719864384521323 |
 
-As we can see, the model is overfitting, therefore we have to reduce the complexity of the model. As before we have changed the hyperparameters manually ) and more specificly we have tried these combination of 
+As we can see, the model is overfitting, therefore we have to reduce the complexity of the model. As before we have changed the hyperparameters manually and more specificly we have tried these combination of 
 hyperparameters:
 
 - learning_rate=0.1, max_depth=7, n_estimators=300
@@ -176,7 +176,7 @@ METTERE SPIEGAZIONE/POSSIBILE SOLUZIONE
 
 For our analysis, we've also used the Random Forest. This model consists of multiple decision trees. To train these trees, we used Bagging, where we repeatedly evaluated different samples from the original training set. Each sample was randomly selected, allowing for replacement.
 By doing this, we ensured that each tree in the Random Forest had a slightly different training set, resulting in a diverse ensemble of trees. We combined the predictions of these individual trees to make accurate and robust predictions for our analysis.
-In order to run the model we defined a parameter grid, performed a grid search and then we have calculated metrics for both train and test. 
+In order to run the model we defined a parameter grid, performed a GridSearchCV and then we have calculated metrics for both train and test. 
 
 ///Results///
 
